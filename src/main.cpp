@@ -37,7 +37,7 @@ int debouncedReedState;
 void setup() {
   Serial.begin(9600 );
   pinMode(reedPin, INPUT_PULLUP);
-  dht.setup(dhtPin);
+  dht.setup(dhtPin, dht.DHT22);
 
   WiFiManager wifiManager;
   wifiManager.autoConnect(wifiSSID, wifiPassword);
@@ -86,6 +86,8 @@ void loop() {
       Serial.print("New temperature:");
       Serial.println(String(temp).c_str());
       client.publish(temperatureTopic, String(temp).c_str(), true);
+    } else {
+      client.publish("garage/falty_temp", dht.getStatusString(), true);
     }
 
     if (checkBound(newHum, hum, 1.0)) {
