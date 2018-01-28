@@ -6,7 +6,7 @@
             "request": "launch",
             "cwd": "${workspaceRoot}",
             "name": "PlatformIO Debugger",
-            "target": "c:/Users/Nick/code/garrage/.pioenvs/d1_mini/firmware.elf",
+            "target": "c:/Users/Nick/code/garage-door-controller/.pioenvs/d1_mini/firmware.elf",
             "gdbpath": "C:/Users/Nick/.platformio/penv/Scripts/piodebuggdb",
             "autorun": [ "source .pioinit" ]
         }

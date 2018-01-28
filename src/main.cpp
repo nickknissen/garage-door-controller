@@ -27,16 +27,21 @@ const long sampleDhtDelay = CONFIG_DHT_SAMPLE_DELAY;
 unsigned long lastDhtSampleTime = 0;
 DHT dht;
 
-// Reed
-const int reedPin = CONFIG_REED_PIN;
-const long sampleReedDelay = CONFIG_REED_SAMPLE_DELAY;
-unsigned long lastReedSampleTime = 0;
-int debouncedReedState;
+// ultrasonic-sensor-hc-sr04 
+const int usTrigPin = CONFIG_US_TRIG_PIN;
+const int usEchoPin = CONFIG_US_ECHO_PIN;
+const long usSampleDelay = CONFIG_US_SAMPLE_DELAY;
+unsigned long usLastSampleTime = 0;
+
+long duration, distance;
 
 
 void setup() {
   Serial.begin(9600 );
-  pinMode(reedPin, INPUT_PULLUP);
+
+  pinMode(usTrigPin, OUTPUT);
+  pinMode(usEchoPin, INPUT);
+
   dht.setup(dhtPin, dht.DHT22);
 
   WiFiManager wifiManager;
@@ -73,11 +78,11 @@ void loop() {
   client.loop();
 
   unsigned long currentMillis = millis();
-  float hum, temp;
 
   if (currentMillis - lastDhtSampleTime >= sampleDhtDelay) {
     lastDhtSampleTime = currentMillis;
 
+    float hum, temp;
     float newHum = dht.getHumidity();
     float newTemp = dht.getTemperature();
 
@@ -97,15 +102,29 @@ void loop() {
       client.publish(humidityTopic, String(hum).c_str(), true);
     }
   }
+  
+  
+  // ultrasonic-sensor-hc-sr04 
+  if (currentMillis - usLastSampleTime >= usSampleDelay) {
+    usLastSampleTime = currentMillis;
 
-  if (currentMillis - lastReedSampleTime >= sampleReedDelay) {
-    lastReedSampleTime = currentMillis;
-    int reading = digitalRead(reedPin);
-    if (reading != debouncedReedState) {
-      Serial.print("New port status:");
-      Serial.println(reading);
-      debouncedReedState = reading;
-      client.publish(doorTopic, String(reading).c_str(), true);
-    }
+    // Clears the trigPin
+    digitalWrite(usTrigPin, LOW);
+    delayMicroseconds(2);
+
+    // Sets the trigPin on HIGH state for 10 micro seconds
+    digitalWrite(usTrigPin, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(usTrigPin, LOW);
+
+    // Reads the echoPin, returns the sound wave travel time in microseconds
+    duration = pulseIn(usEchoPin, HIGH);
+
+    // Calculating the distance
+    distance= duration*0.034/2;
+    // Prints the distance on the Serial Monitor
+    Serial.print("Distance: ");
+    Serial.println(distance);
+
   }
 }
